@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared OpenAPI copy and golden HTTP fixtures vendored into every Koldera SDK repository. Local only, never published.",
+  "description": "Shared OpenAPI copy and golden HTTP fixtures vendored into every Koldera SDK and the CLI. Not published to a package registry.",
   "scripts": {
     "validate": "node validate-golden.mjs",
-    "test": "node --test validate-golden.test.mjs"
+    "test": "node --test validate-golden.test.mjs scripts/sync.test.mjs"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "13.1.0",
