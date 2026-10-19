@@ -1,6 +1,8 @@
 # Koldera SDK contract kit
 
-This repository holds the versioned **client-facing HTTP contract** used by the Koldera SDKs and CLI. It is a copy of the API description from the separately licensed, private Koldera Core server. It contains schemas and synthetic HTTP examples, not the server implementation, credentials or customer data.
+This repository holds the versioned **client-facing HTTP contract** used by the Koldera SDKs and CLI. It copies the
+API description from [Koldera Core](https://github.com/koldera/koldera-core). It contains schemas and synthetic HTTP
+examples, not the server implementation, credentials or customer data.
 
 **Status:** 0.1 development contract. The API may change before 1.0. This repository is not published as an npm package; SDKs vendor a pinned snapshot so their builds remain reproducible.
 
@@ -35,8 +37,11 @@ pnpm validate
 2. On a branch here, run `node scripts/sync-from-core.mjs ../koldera-core`. Update synthetic fixtures for the change, then run the validation commands above and open a pull request.
 3. After merging here, run `node scripts/sync-to-sdk.mjs ../koldera-js` for each SDK and `koldera-cli`. Open a pull request in each client repository and fix any failed client tests. The script writes the new `contracts/KIT_VERSION`.
 
-Both sync scripts check the source tree and commit before copying. Keep the Core source private; only the client-facing contract belongs in this repository.
+Both sync scripts check the source tree and commit before copying. The kit contains only the client-facing contract;
+Core's source and its own build instructions live in the Core repository.
 
 ## Licence
 
-The contract kit is licensed under [Apache-2.0](LICENSE). This includes the client-facing contract snapshots and synthetic fixtures in this repository. Koldera Core is a separate, commercially licensed server; this licence does not grant rights to its implementation or a Core deployment.
+The contract kit is licensed under [Apache-2.0](LICENSE). This includes the client-facing contract snapshots and
+synthetic fixtures in this repository. Koldera Core is a separate server licensed under
+[AGPL-3.0-only](https://github.com/koldera/koldera-core/blob/main/LICENSE). Its licence governs Core itself.
