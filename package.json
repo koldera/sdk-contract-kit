@@ -2,6 +2,7 @@
   "name": "koldera-sdk-contract-kit",
   "version": "0.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "description": "Shared OpenAPI copy and golden HTTP fixtures vendored into every Koldera SDK and the CLI. Not published to a package registry.",
   "scripts": {
