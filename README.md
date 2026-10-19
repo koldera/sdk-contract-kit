@@ -1,45 +1,47 @@
-# sdk-contract-kit
+# Koldera SDK contract kit
 
-The HTTP contract of koldera-core as the SDKs and the CLI consume it: `openapi.yaml`, `document.schema.json`,
-`problem.schema.json`, the koldera-core commit they were copied from (`CORE_VERSION`), and the golden HTTP fixtures in
-[`golden/`](golden) that every SDK test suite replays. `validate-golden.mjs` checks every fixture against the OpenAPI
-description and the schemas.
+This repository holds the versioned **client-facing HTTP contract** used by the Koldera SDKs and CLI. It copies the
+API description from [Koldera Core](https://github.com/koldera/koldera-core). It contains schemas and synthetic HTTP
+examples, not the server implementation, credentials or customer data.
 
-## Flow
+**Status:** 0.1 development contract. The API may change before 1.0. This repository is not published as an npm package; SDKs vendor a pinned snapshot so their builds remain reproducible.
 
-```
-koldera-core (private, source of truth)  --scripts/sync-from-core.mjs-->  sdk-contract-kit
-sdk-contract-kit                         --scripts/sync-to-sdk.mjs----->  <sdk>/contracts/  (koldera-js, koldera-dotnet,
-                                                                                            koldera-python, koldera-go,
-                                                                                            koldera-cli)
-```
+## What's here
 
-koldera-core stays private, so SDK CI cannot compare against it. Each SDK instead records the kit commit it was synced
-from in `contracts/KIT_VERSION` and its CI compares the whole `contracts/` directory (including `golden/`) with this
-repository at that commit. While this repository is private the SDK check is skipped with a notice; it is enforced once
-the kit is readable by the SDK workflows.
+| Path | Purpose |
+| --- | --- |
+| [`openapi.yaml`](openapi.yaml) | REST operations, request and response shapes |
+| [`document.schema.json`](document.schema.json), [`problem.schema.json`](problem.schema.json) | Structured-document input and error responses |
+| [`golden/`](golden) | Synthetic HTTP exchanges used by SDK and CLI tests |
+| [`CORE_VERSION`](CORE_VERSION) | Core commit from which the contract was copied |
+| `scripts/sync-from-core.mjs` | Maintainer script to copy an approved Core contract here |
+| `scripts/sync-to-sdk.mjs` | Maintainer script to vendor this contract into each client |
 
-## Releasing a contract change
+The SDK and CLI repositories store `contracts/KIT_VERSION`, the exact commit of this repository used for their vendored copy. Their CI compares that copy byte for byte with this commit. The fixtures verify client parsing and protocol handling; they do not prove that a particular Core deployment implements every operation.
 
-1. Merge the API change in koldera-core and check out that commit of `origin/main` in a clean koldera-core checkout.
-2. In a branch of this repository: `node scripts/sync-from-core.mjs ../koldera-core`. The script refuses a dirty core
-   tree or a HEAD that is not on `origin/main`, copies the three files, writes `CORE_VERSION` and runs
-   `validate-golden.mjs`. Add or update fixtures in `golden/` for the change, run `pnpm test && pnpm validate`, open a
-   pull request and merge it.
-3. With this repository clean and on the merged commit: `node scripts/sync-to-sdk.mjs ../koldera-js` (and the other
-   SDKs and the CLI). The script mirrors `openapi.yaml`, the schemas, `CORE_VERSION` and `golden/` into
-   `<sdk>/contracts/` (deleting fixtures that no longer exist), writes `contracts/KIT_VERSION`, and warns when the kit
-   commit is not on `origin/main`. Open one pull request per repository and fix the SDK where the tests fail.
+## Validate a checkout
 
-## Development
+Node.js 22 and pnpm 10 are used in CI:
 
-```bash
+```sh
 pnpm install --frozen-lockfile
-pnpm test      # validator and sync script tests
-pnpm validate  # every fixture in golden/ against openapi.yaml and the schemas
+pnpm test
+pnpm validate
 ```
+
+`pnpm validate` checks the golden exchanges against the OpenAPI description and JSON Schemas. The fixtures contain invented IDs and tokens; do not add captured production traffic.
+
+## Update the contract
+
+1. Merge the API change in Koldera Core and check out that clean commit on Core's `main` branch.
+2. On a branch here, run `node scripts/sync-from-core.mjs ../koldera-core`. Update synthetic fixtures for the change, then run the validation commands above and open a pull request.
+3. After merging here, run `node scripts/sync-to-sdk.mjs ../koldera-js` for each SDK and `koldera-cli`. Open a pull request in each client repository and fix any failed client tests. The script writes the new `contracts/KIT_VERSION`.
+
+Both sync scripts check the source tree and commit before copying. The kit contains only the client-facing contract;
+Core's source and its own build instructions live in the Core repository.
 
 ## Licence
 
-No licence is granted yet. The licence of this repository will be decided when it is published; until then all rights
-are reserved.
+The contract kit is licensed under [Apache-2.0](LICENSE). This includes the client-facing contract snapshots and
+synthetic fixtures in this repository. Koldera Core is a separate server licensed under
+[AGPL-3.0-only](https://github.com/koldera/koldera-core/blob/main/LICENSE). Its licence governs Core itself.
